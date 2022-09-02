@@ -22,18 +22,8 @@ steps:
       spotBugsAnalysis: false
 
   - task: SonarCloudPrepare@1
+    displayName: 'Code Review'
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'devops-foundation-lab'
       scannerMode: 'Other'
-
-  - task: Gradle@3
-    inputs:
-      gradleWrapperFile: 'gradlew'
-      tasks: 'build'
-      publishJUnitResults: true
-      testResultsFiles: '**/TEST-*.xml'
-      javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: true
-      sqGradlePluginVersionChoice: 'build'
-      spotBugsAnalysis: false
