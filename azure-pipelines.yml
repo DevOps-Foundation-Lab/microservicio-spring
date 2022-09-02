@@ -14,7 +14,7 @@ steps:
     displayName: Build
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'build'
+      tasks: 'build jacocoTestReport'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
