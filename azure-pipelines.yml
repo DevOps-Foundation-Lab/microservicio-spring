@@ -52,3 +52,16 @@ steps:
       scannerMode: 'Other'
       extraProperties: |
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/tests/test/jacocoTestReport.xml
+
+  - task: Docker@2
+    displayName: Docker login
+    inputs:
+      containerRegistry: 'Docker'
+      command: 'login'
+    
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Docker'
+      repository: 'ricdiazb/devops-foundation-lab'
+      command: 'buildAndPush'
+      Dockerfile: '**/Dockerfile'   
