@@ -27,11 +27,5 @@ steps:
       SonarCloud: 'SonarCloud'
       organization: 'devops-foundation-lab'
       scannerMode: 'Other'
-  
-  - task: Docker@2
-    inputs:
-      containerRegistry: 'Docker'
-      repository: 'devops-foundation-lab'
-      command: 'buildAndPush'
-      Dockerfile: '**/Dockerfile'
-      displayName: Docker
+      extraProperties: |
+        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
