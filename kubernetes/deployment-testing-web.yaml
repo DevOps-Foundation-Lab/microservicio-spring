@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testing-web-deployment
+  labels:
+    app: testing-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testing-web
+  template:
+    metadata:
+      labels:
+        app: testing-web
+    spec:
+      containers:
+      - name: testing-web
+        image: ricdiazb/devops-foundation-lab:latest
+        ports:
+        - containerPort: 8080
