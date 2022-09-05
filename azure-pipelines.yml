@@ -14,7 +14,7 @@ steps:
     displayName: Build
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'build jacocoTestReport'
+      tasks: 'build test jacocoTestReport'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
@@ -51,7 +51,7 @@ steps:
       organization: 'devops-foundation-lab'
       scannerMode: 'Other'
       extraProperties: |
-        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/tests/test/jacocoTestReport.xml
+        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
   - task: Docker@2
     displayName: Docker login
