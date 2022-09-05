@@ -68,7 +68,7 @@ steps:
     inputs:
       pollingTimeoutSec: '300'
     displayName: 'SonarQube publish'
-
+  
   - task: sonarcloud-buildbreaker@2
     inputs:
       SonarCloud: 'SonarCloud'
@@ -84,3 +84,15 @@ steps:
 
   - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
     displayName: 'Docker artifact'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    command: 'login'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'Docker'
+    repository: 'ricdiazb/devops-foundation-lab'
+    command: 'buildAndPush'
+    Dockerfile: '**/Dockerfile'
