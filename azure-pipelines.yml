@@ -58,7 +58,7 @@ steps:
       gradleWrapperFile: 'gradlew'
       tasks: "build jacocoTestReport"
       javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: true
+      sonarQubeRunAnalysis: false
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.3'
     displayName: 'Analyze current Branch'
