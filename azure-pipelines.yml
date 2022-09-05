@@ -15,7 +15,7 @@ stages:
     displayName: 'Build'
     steps:
     - task: Gradle@3
-      displayName: 'Build'
+      displayName: 'build'
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'build jacocoTestReport'
@@ -70,6 +70,17 @@ stages:
   - job: deploy
     displayName: 'Deploy'
     steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'appJar'
+        downloadPath: '$(Pipeline.Workspace)'
+      displayName: Descarga Jar
+      
+    - script: "mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs"  
+      displayName:  Se mueve JAR a carpeta raiz
+      
     - task: Docker@2
       displayName: Docker login
       inputs:
