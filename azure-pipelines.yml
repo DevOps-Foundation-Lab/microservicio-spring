@@ -9,16 +9,16 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  - task: Gradle@3
-    displayName: 'Build'
-    inputs:
-      gradleWrapperFile: 'gradlew'
-      tasks: 'build jacocoTestReport'
-      publishJUnitResults: true
-      testResultsFiles: '**/TEST-*.xml'
-      javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: false
-      spotBugsAnalysis: false
+#  - task: Gradle@3
+#    displayName: 'Build'
+#    inputs:
+#      gradleWrapperFile: 'gradlew'
+#      tasks: 'build jacocoTestReport'
+#      publishJUnitResults: true
+#      testResultsFiles: '**/TEST-*.xml'
+#      javaHomeOption: 'JDKVersion'
+#      sonarQubeRunAnalysis: false
+#      spotBugsAnalysis: false
 
   - task: CopyFiles@2
     displayName: 'Prepare artifact'
@@ -54,15 +54,15 @@ steps:
       extraProperties: |
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
-#  - task: Gradle@3
-#    inputs:
-#      gradleWrapperFile: 'gradlew'
-#      tasks: 'build jacocoTestReport'
-#      javaHomeOption: 'JDKVersion'
-#      sonarQubeRunAnalysis: true
-#      sqGradlePluginVersionChoice: 'specify'
-#      sonarQubeGradlePluginVersion: '3.3'
-#    displayName: 'SonarQube run'
+  - task: Gradle@3
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: 'build jacocoTestReport'
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: true
+      sqGradlePluginVersionChoice: 'specify'
+      sonarQubeGradlePluginVersion: '3.3'
+    displayName: 'SonarQube run'
 
 #  - task: SonarCloudPublish@1
 #    inputs:
