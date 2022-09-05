@@ -10,10 +10,78 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+  - task: Gradle@3
+    displayName: 'Build'
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: 'build jacocoTestReport'
+      publishJUnitResults: true
+      testResultsFiles: '**/TEST-*.xml'
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: false
+      spotBugsAnalysis: false
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+  - task: CopyFiles@2
+    displayName: 'Prepare artifact'
+    inputs:
+      sourceFolder: '$(Build.SourcesDirectory)'
+      contents: |
+        **/build/libs/*.jar
+        **/build/**/*.xml
+      targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish artifact'
+    inputs:
+      pathToPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: appJar
+      publishLocation: 'Container'
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'SonarQube artifact'
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'appJar'
+      downloadPath: '$(Pipeline.Workspace)'
+
+  - task: SonarCloudPrepare@1
+    displayName: 'Sonarqube prepare'
+    inputs:
+      SonarCloud: 'SonarCloud'
+      organization: 'devops-foundation-lab'
+      projectKey: 'microservicio-spring'
+      projectName: 'microservicio-spring'
+      extraProperties: |
+        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
+
+  - task: Gradle@3
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: 'build jacocoTestReport'
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: true
+      sqGradlePluginVersionChoice: 'specify'
+      sonarQubeGradlePluginVersion: '3.3'
+    displayName: 'SonarQube run'
+
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: '300'
+    displayName: 'SonarQube publish'
+  
+  - task: sonarcloud-buildbreaker@2
+    inputs:
+      SonarCloud: 'SonarCloud'
+      organization: 'devops-foundation-lab'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'appJar'
+      downloadPath: '$(Pipeline.Workspace)'
+    displayName: 'Docker artifact'
+
+  - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
+    displayName: 'Docker artifact'
