@@ -15,7 +15,7 @@ stages:
     displayName: 'Build'
     steps:
     - task: Gradle@3
-      displayName: 'build'
+      displayName: 'Build'
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'build jacocoTestReport'
@@ -25,12 +25,14 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false
     - task: CopyFiles@2
+      displayName: 'Copy files'
       inputs:
         sourceFolder: '$(Build.SourcesDirectory)'
         contents: |
           **/build/libs/*.jar
         targetFolder: '$(Build.ArtifactStagingDirectory)' 
     - task: PublishBuildArtifacts@1
+      displayName: 'Publish build artifact'
       inputs:
         pathToPublish: '$(Build.ArtifactStagingDirectory)'
         artifactName: appJar
@@ -42,7 +44,7 @@ stages:
     displayName: 'Code Review'
     steps:
     - task: SonarCloudPrepare@1
-      displayName: 'Sonarqube prepare'
+      displayName: 'SonarCloud prepare'
       inputs:
         SonarCloud: 'SonarCloud'
         organization: 'devops-foundation-lab'
@@ -51,7 +53,7 @@ stages:
         extraProperties: |
           sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
     - task: Gradle@3
-      displayName: 'SonarQube run'
+      displayName: 'SonarCloud run'
       inputs:
         gradleWrapperFile: 'gradlew'
         tasks: 'build jacocoTestReport'
@@ -60,7 +62,7 @@ stages:
         sqGradlePluginVersionChoice: 'specify'
         sonarQubeGradlePluginVersion: '3.3'
     - task: sonarcloud-buildbreaker@2
-      displayName: 'SonarQube breaker'
+      displayName: 'SonarCloud breaker'
       inputs:
         SonarCloud: 'SonarCloud'
         organization: 'devops-foundation-lab'
@@ -71,15 +73,15 @@ stages:
     displayName: 'Deploy'
     steps:
     - task: DownloadBuildArtifacts@0
+      displayName: Download JAR
       inputs:
         buildType: 'current'
         downloadType: 'single'
         artifactName: 'appJar'
         downloadPath: '$(Pipeline.Workspace)'
-      displayName: Descarga Jar
       
     - script: "mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs"  
-      displayName:  Se mueve JAR a carpeta raiz
+      displayName:  Move JAR to root folder
       
     - task: Docker@2
       displayName: Docker login
@@ -93,3 +95,7 @@ stages:
         repository: 'ricdiazb/devops-foundation-lab'
         command: 'buildAndPush'  
         Dockerfile: '**/Dockerfile'
+    - task: KubectlInstaller@0
+      displayName: Install Kubectl
+      inputs:
+        kubectlVersion: 'latest'
