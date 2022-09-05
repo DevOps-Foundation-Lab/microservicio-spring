@@ -5,6 +5,9 @@ plugins {
 	id 'jacoco'
 }
 
+apply plugin: 'java'
+apply plugin: 'jacoco'
+
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
