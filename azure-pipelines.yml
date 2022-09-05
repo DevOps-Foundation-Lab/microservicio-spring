@@ -3,15 +3,14 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-#trigger:
-#- main
+trigger: ['feature-ms-ricardodiaz-mensaje']
 
 pool:
   vmImage: ubuntu-latest
 
 steps:
   - task: Gradle@3
-    displayName: Build
+    displayName: 'Build'
     inputs:
       gradleWrapperFile: 'gradlew'
       tasks: 'build jacocoTestReport'
@@ -20,24 +19,25 @@ steps:
       javaHomeOption: 'JDKVersion'
       sonarQubeRunAnalysis: false
       spotBugsAnalysis: false
-  
+
   - task: CopyFiles@2
-    displayName: Copia archivos
+    displayName: 'Prepare artifact'
     inputs:
       sourceFolder: '$(Build.SourcesDirectory)'
       contents: |
-          **/build/libs/*.jar
-          **/build/**/*.xml
+        **/build/libs/*.jar
+        **/build/**/*.xml
       targetFolder: '$(Build.ArtifactStagingDirectory)'
 
   - task: PublishBuildArtifacts@1
-    displayName: Publica artefactos
+    displayName: 'Publish artifact'
     inputs:
       pathToPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: appJar
       publishLocation: 'Container'
+
   - task: DownloadBuildArtifacts@0
-    displayName: Descarga Jar
+    displayName: 'SonarQube artifact'
     inputs:
       buildType: 'current'
       downloadType: 'single'
@@ -45,40 +45,42 @@ steps:
       downloadPath: '$(Pipeline.Workspace)'
 
   - task: SonarCloudPrepare@1
-    displayName: 'Code Review'
+    displayName: 'Sonarqube prepare'
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'devops-foundation-lab'
       projectKey: 'DevOps-Foundation-Lab_microservicio-spring'
-      projectName: 'microservicio-spring'
-      scannerMode: 'Other'
+      projectName: 'DevOps-Foundation-Lab_microservicio-spring'
       extraProperties: |
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
-  
+
   - task: Gradle@3
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: "build jacocoTestReport"
+      tasks: 'build jacocoTestReport'
       javaHomeOption: 'JDKVersion'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.3'
-    displayName: 'Analyze current Branch'
-      
+    displayName: 'SonarQube run'
+
   - task: SonarCloudPublish@1
     inputs:
       pollingTimeoutSec: '300'
-    displayName: 'Publish Analysis Results'
+    displayName: 'SonarQube publish'
 
-  - task: Docker@2
-    displayName: Docker login
+  - task: sonarcloud-buildbreaker@2
     inputs:
-      containerRegistry: 'Docker'
-      command: 'login'
-    
-  - task: Docker@2
+      SonarCloud: 'SonarCloud'
+      organization: 'devops-foundation-lab'
+
+  - task: DownloadBuildArtifacts@0
     inputs:
-      containerRegistry: 'Docker'
-      repository: 'ricdiazb/devops-foundation-lab'
-      command: 'buildAndPush'
-      Dockerfile: '**/Dockerfile'   
+      buildType: 'current'
+      downloadType: 'single'
+      artifactName: 'appJar'
+      downloadPath: '$(Pipeline.Workspace)'
+    displayName: 'Docker artifact'
+
+  - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
+    displayName: 'Docker artifact'
