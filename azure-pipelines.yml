@@ -9,25 +9,25 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-#  - task: Gradle@3
-#    displayName: 'Build'
-#    inputs:
-#      gradleWrapperFile: 'gradlew'
-#      tasks: 'build jacocoTestReport'
-#      publishJUnitResults: true
-#      testResultsFiles: '**/TEST-*.xml'
-#      javaHomeOption: 'JDKVersion'
-#      sonarQubeRunAnalysis: false
-#      spotBugsAnalysis: false
-
-  - task: CopyFiles@2
-    displayName: 'Prepare artifact'
+  - task: Gradle@3
+    displayName: 'Build'
     inputs:
-      sourceFolder: '$(Build.SourcesDirectory)'
-      contents: |
-        **/build/libs/*.jar
-        **/build/**/*.xml
-      targetFolder: '$(Build.ArtifactStagingDirectory)'
+      gradleWrapperFile: 'gradlew'
+      tasks: 'build jacocoTestReport'
+      publishJUnitResults: true
+      testResultsFiles: '**/TEST-*.xml'
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: false
+      spotBugsAnalysis: false
+
+#  - task: CopyFiles@2
+#    displayName: 'Prepare artifact'
+#    inputs:
+#      sourceFolder: '$(Build.SourcesDirectory)'
+#      contents: |
+#        **/build/libs/*.jar
+#        **/build/**/*.xml
+#      targetFolder: '$(Build.ArtifactStagingDirectory)'
 
 #  - task: PublishBuildArtifacts@1
 #    displayName: 'Publish artifact'
@@ -85,15 +85,15 @@ steps:
 #  - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
 #    displayName: 'Docker artifact'
   
-  - task: Docker@2
-    displayName: Docker login
-    inputs:
-      containerRegistry: 'Docker'
-      command: 'login'
+#  - task: Docker@2
+#    displayName: Docker login
+#    inputs:
+#      containerRegistry: 'Docker'
+#      command: 'login'
     
-  - task: Docker@2
-    inputs:
-      containerRegistry: 'Docker'
-      repository: 'ricdiazb/devops-foundation-lab'
-      command: 'buildAndPush'
-      Dockerfile: '**/Dockerfile'   
+#  - task: Docker@2
+#    inputs:
+#      containerRegistry: 'Docker'
+#      repository: 'ricdiazb/devops-foundation-lab'
+#      command: 'buildAndPush'
+#      Dockerfile: '**/Dockerfile'   
