@@ -44,20 +44,21 @@ steps:
 #      artifactName: 'appJar'
 #      downloadPath: '$(Pipeline.Workspace)'
 
-  - task: SonarCloudPrepare@1
-    displayName: 'Sonarqube prepare'
-    inputs:
-      SonarCloud: 'SonarCloud'
-      organization: 'devops-foundation-lab'
-      projectKey: 'microservicio-spring'
-      projectName: 'microservicio-spring'
-      extraProperties: |
-        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
+#  - task: SonarCloudPrepare@1
+#    displayName: 'Sonarqube prepare'
+#    inputs:
+#      SonarCloud: 'SonarCloud'
+#      organization: 'devops-foundation-lab'
+#      projectKey: 'microservicio-spring'
+#      projectName: 'microservicio-spring'
+#      extraProperties: |
+#        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
   - task: Gradle@3
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'build jacocoTestReport'
+      tasks: sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml | 
+             'build jacocoTestReport'
       javaHomeOption: 'JDKVersion'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
