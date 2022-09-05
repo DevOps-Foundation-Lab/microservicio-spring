@@ -30,6 +30,11 @@ stages:
         contents: |
           **/build/libs/*.jar
         targetFolder: '$(Build.ArtifactStagingDirectory)' 
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: appJar
+        publishLocation: 'Container'
 
 - stage: Code_Review
   jobs:
