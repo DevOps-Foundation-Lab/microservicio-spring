@@ -8,94 +8,69 @@
 pool:
   vmImage: ubuntu-latest
 
-steps:  
-  - task: Gradle@3
+stages:
+- stage: Build 
+  jobs:
+  - job: build
     displayName: 'Build'
-    inputs:
-      gradleWrapperFile: 'gradlew'
-      tasks: 'build jacocoTestReport'
-      publishJUnitResults: true
-      testResultsFiles: '**/TEST-*.xml'
-      javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: false
-      spotBugsAnalysis: false
+    steps:
+    - task: Gradle@3
+      displayName: 'Build'
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'build jacocoTestReport'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false  
 
-#  - task: CopyFiles@2
-#    displayName: 'Prepare artifact'
-#    inputs:
-#      sourceFolder: '$(Build.SourcesDirectory)'
-#      contents: |
-#        **/build/libs/*.jar
-#        **/build/**/*.xml
-#      targetFolder: '$(Build.ArtifactStagingDirectory)'
+- stage: Code Review
+  jobs:
+  - job: SonarCloud
+    displayName: 'Code Review'
+    steps:
+    - task: SonarCloudPrepare@1
+      displayName: 'Sonarqube prepare'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'devops-foundation-lab'
+        projectKey: 'microservicio-spring'
+        projectName: 'microservicio-spring'
+        extraProperties: |
+          sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
-#  - task: PublishBuildArtifacts@1
-#    displayName: 'Publish artifact'
-#    inputs:
-#      pathToPublish: '$(Build.ArtifactStagingDirectory)'
-#      artifactName: appJar
-#      publishLocation: 'Container'
-
-#  - task: DownloadBuildArtifacts@0
-#    displayName: 'SonarQube artifact'
-#    inputs:
-#      buildType: 'current'
-#      downloadType: 'single'
-#      artifactName: 'appJar'
-#      downloadPath: '$(Pipeline.Workspace)'
-
-  - task: SonarCloudPrepare@1
-    displayName: 'Sonarqube prepare'
-    inputs:
-      SonarCloud: 'SonarCloud'
-      organization: 'devops-foundation-lab'
-      projectKey: 'microservicio-spring'
-      projectName: 'microservicio-spring'
-      extraProperties: |
-        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
-
-  - task: Gradle@3
-    displayName: 'SonarQube run'
-    inputs:
-      gradleWrapperFile: 'gradlew'
-      tasks: 'build jacocoTestReport'
-      javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: true
-      sqGradlePluginVersionChoice: 'specify'
-      sonarQubeGradlePluginVersion: '3.3'
-
-#  - task: SonarCloudPublish@1
-#    inputs:
-#      pollingTimeoutSec: '300'
-#    displayName: 'SonarQube publish'
+    - task: Gradle@3
+      displayName: 'SonarQube run'
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'build jacocoTestReport'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: true
+        sqGradlePluginVersionChoice: 'specify'
+        sonarQubeGradlePluginVersion: '3.3'
   
-  - task: sonarcloud-buildbreaker@2
-    displayName: 'SonarQube breaker'
-    inputs:
-      SonarCloud: 'SonarCloud'
-      organization: 'devops-foundation-lab'
+    - task: sonarcloud-buildbreaker@2
+      displayName: 'SonarQube breaker'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'devops-foundation-lab'
 
-#  - task: DownloadBuildArtifacts@0
-#    inputs:
-#      buildType: 'current'
-#      downloadType: 'single'
-#      artifactName: 'appJar'
-#      downloadPath: '$(Pipeline.Workspace)'
-#    displayName: 'Docker artifact'
-
-#  - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
-#    displayName: 'Docker artifact'
-  
-  - task: Docker@2
-    displayName: Docker login
-    inputs:
-      containerRegistry: 'Docker'
-      command: 'login'
-    
-  - task: Docker@2
-    displayName: 'Docker build & push'
-    inputs:
-      containerRegistry: 'Docker'
-      repository: 'ricdiazb/devops-foundation-lab'
-      command: 'buildAndPush'  
-      Dockerfile: '**/Dockerfile'
+- stage: Deploy 
+  jobs:
+  - job: deploy
+    displayName: 'Deploy'
+    steps:
+    - task: Docker@2
+      displayName: Docker login
+      inputs:
+        containerRegistry: 'Docker'
+        command: 'login'
+      
+    - task: Docker@2
+      displayName: 'Docker build & push'
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'ricdiazb/devops-foundation-lab'
+        command: 'buildAndPush'  
+        Dockerfile: '**/Dockerfile'
