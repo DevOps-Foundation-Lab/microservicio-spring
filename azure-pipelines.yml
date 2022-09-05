@@ -8,7 +8,7 @@
 pool:
   vmImage: ubuntu-latest
 
-steps:
+steps:  
   - task: Gradle@3
     displayName: 'Build'
     inputs:
@@ -55,6 +55,7 @@ steps:
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
   - task: Gradle@3
+    displayName: 'SonarQube run'
     inputs:
       gradleWrapperFile: 'gradlew'
       tasks: 'build jacocoTestReport'
@@ -62,7 +63,6 @@ steps:
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.3'
-    displayName: 'SonarQube run'
 
 #  - task: SonarCloudPublish@1
 #    inputs:
