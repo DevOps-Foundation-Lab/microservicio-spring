@@ -9,6 +9,15 @@ pool:
   vmImage: ubuntu-latest
 
 stages:
+- stage: Checkout 
+  jobs:
+  - job: checkout
+    displayName: 'Checkout'
+    steps:
+    - checkout: self
+      persistCredentials: true
+      clean: true
+
 - stage: Build 
   jobs:
   - job: build
