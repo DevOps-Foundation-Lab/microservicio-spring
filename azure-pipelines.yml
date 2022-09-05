@@ -23,7 +23,13 @@ stages:
         testResultsFiles: '**/TEST-*.xml'
         javaHomeOption: 'JDKVersion'
         sonarQubeRunAnalysis: false
-        spotBugsAnalysis: false  
+        spotBugsAnalysis: false
+    - task: CopyFiles@2
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: |
+          **/build/libs/*.jar
+        targetFolder: '$(Build.ArtifactStagingDirectory)' 
 
 - stage: Code_Review
   jobs:
@@ -39,7 +45,6 @@ stages:
         projectName: 'microservicio-spring'
         extraProperties: |
           sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
-
     - task: Gradle@3
       displayName: 'SonarQube run'
       inputs:
@@ -49,7 +54,6 @@ stages:
         sonarQubeRunAnalysis: true
         sqGradlePluginVersionChoice: 'specify'
         sonarQubeGradlePluginVersion: '3.3'
-  
     - task: sonarcloud-buildbreaker@2
       displayName: 'SonarQube breaker'
       inputs:
@@ -66,7 +70,6 @@ stages:
       inputs:
         containerRegistry: 'Docker'
         command: 'login'
-      
     - task: Docker@2
       displayName: 'Docker build & push'
       inputs:
