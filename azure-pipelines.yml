@@ -25,7 +25,7 @@ stages:
         sonarQubeRunAnalysis: false
         spotBugsAnalysis: false  
 
-- stage: CodeReview
+- stage: Code_Review
   jobs:
   - job: SonarCloud
     displayName: 'Code Review'
