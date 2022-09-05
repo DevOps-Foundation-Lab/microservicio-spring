@@ -44,21 +44,20 @@ steps:
 #      artifactName: 'appJar'
 #      downloadPath: '$(Pipeline.Workspace)'
 
-#  - task: SonarCloudPrepare@1
-#    displayName: 'Sonarqube prepare'
-#    inputs:
-#      SonarCloud: 'SonarCloud'
-#      organization: 'devops-foundation-lab'
-#      projectKey: 'microservicio-spring'
-#      projectName: 'microservicio-spring'
-#      extraProperties: |
-#        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
+  - task: SonarCloudPrepare@1
+    displayName: 'Sonarqube prepare'
+    inputs:
+      SonarCloud: 'SonarCloud'
+      organization: 'devops-foundation-lab'
+      projectKey: 'microservicio-spring'
+      projectName: 'microservicio-spring'
+      extraProperties: |
+        sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
 
   - task: Gradle@3
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml | 
-             'build jacocoTestReport'
+      tasks: 'build jacocoTestReport'
       javaHomeOption: 'JDKVersion'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
@@ -71,6 +70,7 @@ steps:
 #    displayName: 'SonarQube publish'
   
   - task: sonarcloud-buildbreaker@2
+    displayName: 'SonarQube breaker'
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'devops-foundation-lab'
@@ -86,15 +86,16 @@ steps:
 #  - script: 'mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs'
 #    displayName: 'Docker artifact'
   
-#  - task: Docker@2
-#    displayName: Docker login
-#    inputs:
-#      containerRegistry: 'Docker'
-#      command: 'login'
+  - task: Docker@2
+    displayName: Docker login
+    inputs:
+      containerRegistry: 'Docker'
+      command: 'login'
     
-#  - task: Docker@2
-#    inputs:
-#      containerRegistry: 'Docker'
-#      repository: 'ricdiazb/devops-foundation-lab'
-#      command: 'buildAndPush'
-#      Dockerfile: '**/Dockerfile'   
+  - task: Docker@2
+    displayName: 'Docker build & push'
+    inputs:
+      containerRegistry: 'Docker'
+      repository: 'ricdiazb/devops-foundation-lab'
+      command: 'buildAndPush'  
+      Dockerfile: '**/Dockerfile'
