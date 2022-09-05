@@ -14,11 +14,11 @@ steps:
     displayName: Build
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'build test jacocoTestReport'
+      tasks: 'build'
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: true
+      sonarQubeRunAnalysis: false
       spotBugsAnalysis: false
   
   - task: CopyFiles@2
@@ -52,6 +52,21 @@ steps:
       scannerMode: 'Other'
       extraProperties: |
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
+  
+  - task: Gradle@3
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: "build jacocoTestReport"
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: true
+      sqGradlePluginVersionChoice: 'specify'
+      sonarQubeGradlePluginVersion: '3.3'
+    displayName: 'Analyze current Branch'
+      
+  - task: SonarCloudPublish@1
+    inputs:
+      pollingTimeoutSec: '300'
+    displayName: 'Publish Analysis Results'
 
   - task: Docker@2
     displayName: Docker login
