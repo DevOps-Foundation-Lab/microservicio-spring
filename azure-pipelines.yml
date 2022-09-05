@@ -49,6 +49,8 @@ steps:
     inputs:
       SonarCloud: 'SonarCloud'
       organization: 'devops-foundation-lab'
+      projectKey: 'DevOps-Foundation-Lab_microservicio-spring'
+      projectName: 'microservicio-spring'
       scannerMode: 'Other'
       extraProperties: |
         sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
@@ -58,7 +60,7 @@ steps:
       gradleWrapperFile: 'gradlew'
       tasks: "build jacocoTestReport"
       javaHomeOption: 'JDKVersion'
-      sonarQubeRunAnalysis: false
+      sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.3'
     displayName: 'Analyze current Branch'
