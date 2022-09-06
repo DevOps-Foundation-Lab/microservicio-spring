@@ -1,5 +1,4 @@
-trigger:
-  - main
+#trigger: ['feature-ms-ricardodiaz-mensaje']
 
 pool:
   vmImage: ubuntu-latest
