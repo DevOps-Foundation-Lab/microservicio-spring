@@ -1,4 +1,5 @@
-trigger: ['feature-ms-ricardodiaz-mensaje']
+trigger:
+  - feature-ms-ricardodiaz-mensaje
 
 pool:
   vmImage: ubuntu-latest
