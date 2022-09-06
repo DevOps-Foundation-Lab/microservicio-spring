@@ -1,9 +1,5 @@
 trigger:
-  branches:
-    include:
-      - feature-ms-ricardodiaz-mensaje
-    exclude:
-      - main
+  - main
 
 pool:
   vmImage: ubuntu-latest
