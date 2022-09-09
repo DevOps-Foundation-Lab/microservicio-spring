@@ -1,0 +1,122 @@
+trigger: ['feature-ms-ricardodiaz-mensaje']
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: Checkout 
+  jobs:
+  - job: checkout
+    displayName: 'Checkout'
+    steps:
+    - checkout: self
+      persistCredentials: true
+      clean: true
+
+- stage: Build 
+  jobs:
+  - job: build
+    displayName: 'Build'
+    steps:
+    - task: Gradle@3
+      displayName: 'Build'
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'build jacocoTestReport'
+        publishJUnitResults: true
+        testResultsFiles: '**/TEST-*.xml'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: false
+        spotBugsAnalysis: false
+    - task: CopyFiles@2
+      displayName: 'Copy files'
+      inputs:
+        sourceFolder: '$(Build.SourcesDirectory)'
+        contents: |
+          **/build/libs/*.jar
+        targetFolder: '$(Build.ArtifactStagingDirectory)' 
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish build artifact'
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: appJar
+        publishLocation: 'Container'
+
+- stage: Code_Review
+  jobs:
+  - job: SonarCloud
+    displayName: 'Code Review'
+    steps:
+    - task: SonarCloudPrepare@1
+      displayName: 'SonarCloud prepare'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'devops-foundation-lab'
+        projectKey: 'microservicio-spring'
+        projectName: 'microservicio-spring'
+        extraProperties: |
+          sonar.coverage.jacoco.xmlReportPaths=$(Pipeline.Workspace)/appJar/build/reports/jacoco/test/jacocoTestReport.xml
+    - task: Gradle@3
+      displayName: 'SonarCloud run'
+      inputs:
+        gradleWrapperFile: 'gradlew'
+        tasks: 'build jacocoTestReport'
+        javaHomeOption: 'JDKVersion'
+        sonarQubeRunAnalysis: true
+        sqGradlePluginVersionChoice: 'specify'
+        sonarQubeGradlePluginVersion: '3.3'
+    - task: sonarcloud-buildbreaker@2
+      displayName: 'SonarCloud breaker'
+      inputs:
+        SonarCloud: 'SonarCloud'
+        organization: 'devops-foundation-lab'
+
+- stage: Deploy 
+  jobs:
+  - job: deploy
+    displayName: 'Deploy'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      displayName: Download JAR
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'appJar'
+        downloadPath: '$(Pipeline.Workspace)'
+      
+    - script: "mkdir -p build/libs; mv $(Pipeline.Workspace)/appJar/build/libs/ build/; chmod -R 555 build/libs"  
+      displayName:  Move JAR to root folder
+      
+    - task: Docker@2
+      displayName: Docker login
+      inputs:
+        containerRegistry: 'Docker'
+        command: 'login'
+    - task: Docker@2
+      displayName: 'Docker build & push'
+      inputs:
+        containerRegistry: 'Docker'
+        repository: 'ricdiazb/devops-foundation-lab'
+        command: 'buildAndPush'  
+        Dockerfile: '**/Dockerfile'
+    - task: KubectlInstaller@0
+      displayName: Install Kubectl
+      inputs:
+        kubectlVersion: 'latest'
+    - task: Kubernetes@1
+      displayName: Kubernetes login
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'Kubernetes'
+        namespace: 'default'
+        command: 'login'
+    - task: Kubernetes@1
+      displayName: Kubernetes container deploy
+      inputs:
+        connectionType: 'Kubernetes Service Connection'
+        kubernetesServiceEndpoint: 'Kubernetes'
+        namespace: 'default'
+        command: 'apply'
+        arguments: '-f kubernetes/deployment-testing-web.yaml'
+        secretType: 'dockerRegistry'
+        containerRegistryType: 'Azure Container Registry'
