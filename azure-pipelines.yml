@@ -122,7 +122,7 @@ stages:
         containerRegistryType: 'Azure Container Registry'
     
     - script: |
-        ipApp=$(kubectl get services DevOps-Foundation-Lab --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        ipApp=$(kubectl get services testing-web --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
         echo $ipApp
         URLApp=http://$ipApp:8080
         echo $URLApp
