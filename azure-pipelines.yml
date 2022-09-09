@@ -1,4 +1,4 @@
-#trigger: ['feature-ms-ricardodiaz-mensaje']
+trigger: ['feature-ms-ricardodiaz-mensaje']
 
 pool:
   vmImage: ubuntu-latest
@@ -120,12 +120,3 @@ stages:
         arguments: '-f kubernetes/deployment-testing-web.yaml'
         secretType: 'dockerRegistry'
         containerRegistryType: 'Azure Container Registry'
-    
-    - script: |
-        ipApp=$(kubectl get services testing-web --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
-        echo $ipApp
-        URLApp=http://$ipApp:8080
-        echo $URLApp
-        echo "##vso[task.setvariable variable=appDeploy;isOutput=true]$URLApp"
-      name: getip
-      displayName: Get IP
